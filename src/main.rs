@@ -14,6 +14,8 @@ fn main() {
   //   thread::sleep(Duration::from_millis(1));
   // }
   let (tx, rx) = mpsc::channel();
+  let tx1 = tx.clone();  
+  
   let v = vec![
     String::from("First"), 
     String::from("Second"),
@@ -22,6 +24,7 @@ fn main() {
   
 
   let handle = thread::spawn(move|| {
+    println!("First thread started");
     println!("The vector is {:?}", v);
     let msg1 = String::from("Hello");
     tx.send(msg1).unwrap();
@@ -34,7 +37,20 @@ fn main() {
     }
   });
 
-  handle.join().unwrap();
+  thread::spawn(move || {
+    println!("Second thread started");
+    let msg = vec! [
+      String::from("another thread started"),
+      String::from("and transmitting data"),
+      String::from("!")
+    ];
+    for m in msg {
+      tx1.send(m).unwrap();
+      thread::sleep(Duration::from_secs(1));
+    }
+  });
+
+  // handle.join().unwrap();
   println!("The message received is {}", rx.recv().unwrap());
 
   for r in rx {
