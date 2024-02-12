@@ -14,15 +14,30 @@ fn main() {
   //   thread::sleep(Duration::from_millis(1));
   // }
   let (tx, rx) = mpsc::channel();
-  let v = vec![1, 2, 3, 4];
+  let v = vec![
+    String::from("First"), 
+    String::from("Second"),
+    String::from("Third"),
+    String::from("Fourth")];
   
 
   let handle = thread::spawn(move|| {
     println!("The vector is {:?}", v);
     let msg1 = String::from("Hello");
     tx.send(msg1).unwrap();
+    // ownership will be transferred and msg1 will be transferred, hence the ownership is transferred to the other thread(receiver)
+    // println!("The message sent is {}", msg1);
+
+    for n in v {
+      tx.send(n).unwrap();
+      thread::sleep(Duration::from_secs(1));
+    }
   });
 
   handle.join().unwrap();
-  println!("The message is {}", rx.recv().unwrap());
+  println!("The message received is {}", rx.recv().unwrap());
+
+  for r in rx {
+    println!("Received = {}", r);
+  }
 }
